@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Focus Bubble – Smart Study Assistant</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet"/>
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.2.0/dist/tf.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/coco-ssd@2.2.2/dist/coco-ssd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<link rel="stylesheet" href="style.css"/>
+
+</head>
+<body>
+
+<div class="bg-grid"></div>
+<div class="bg-orb orb1"></div>
+<div class="bg-orb orb2"></div>
+<div id="toast-container"></div>
+
+<!-- =============== LANDING PAGE =============== -->
+<div id="page-landing" class="page active">
+  <div style="position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;">
+    <div class="landing-badge">🎯 Smart Focus Monitoring</div>
+    <h1 class="landing-title">Focus Bubble</h1>
+    <p class="landing-sub">An AI-powered study companion that monitors your environment in real time and keeps you locked into flow state.</p>
+    <div class="landing-buttons">
+      <button class="btn btn-primary" onclick="showPage('page-register')">✦ Get Started Free</button>
+      <button class="btn btn-secondary" onclick="showPage('page-login')">Sign In</button>
+    </div>
+    <div class="glass quote-container">
+      <p id="quote-text"></p>
+      <p id="quote-author"></p>
+    </div>
+    <div class="features-row">
+      <div class="feat-chip"><span>🎙️</span> Noise Detection</div>
+      <div class="feat-chip"><span>👁️</span> Person Detection</div>
+      <div class="feat-chip"><span>💡</span> Light Analysis</div>
+      <div class="feat-chip"><span>📊</span> Progress Analytics</div>
+    </div>
+  </div>
+</div>
+
+<!-- =============== REGISTER PAGE =============== -->
+<div id="page-register" class="page">
+  <div style="position:relative;z-index:1;width:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px 20px;">
+    <div class="glass auth-card">
+      <div class="auth-logo">Focus Bubble</div>
+      <h2 class="auth-title">Create account</h2>
+      <p class="auth-sub">Start your focused learning journey today.</p>
+      <div class="auth-form">
+        <div class="input-group">
+          <label>Full Name</label>
+          <input id="reg-name" type="text" placeholder="Alex Johnson"/>
+          <span class="error-msg" id="err-reg-name">Please enter your name</span>
+        </div>
+        <div class="input-group">
+          <label>Email</label>
+          <input id="reg-email" type="email" placeholder="alex@example.com"/>
+          <span class="error-msg" id="err-reg-email">Enter a valid email</span>
+        </div>
+        <div class="input-group">
+          <label>Password</label>
+          <input id="reg-pass" type="password" placeholder="Min. 6 characters"/>
+          <span class="error-msg" id="err-reg-pass">Password must be at least 6 characters</span>
+        </div>
+        <button class="btn btn-primary" style="width:100%;margin-top:6px" onclick="register()">Create Account →</button>
+      </div>
+      <div class="auth-footer">Already have an account? <a onclick="showPage('page-login')">Sign in</a></div>
+    </div>
+    <button class="btn btn-secondary" style="margin-top:16px" onclick="showPage('page-landing')">← Back</button>
+  </div>
+</div>
+
+<!-- =============== LOGIN PAGE =============== -->
+<div id="page-login" class="page">
+  <div style="position:relative;z-index:1;width:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px 20px;">
+    <div class="glass auth-card">
+      <div class="auth-logo">Focus Bubble</div>
+      <h2 class="auth-title">Welcome back</h2>
+      <p class="auth-sub">Sign in to continue your study sessions.</p>
+      <div class="auth-form">
+        <div class="input-group">
+          <label>Email</label>
+          <input id="login-email" type="email" placeholder="alex@example.com"/>
+          <span class="error-msg" id="err-login-email">Enter a valid email</span>
+        </div>
+        <div class="input-group">
+          <label>Password</label>
+          <input id="login-pass" type="password" placeholder="Your password"/>
+          <span class="error-msg" id="err-login-pass">Incorrect credentials</span>
+        </div>
+        <button class="btn btn-primary" style="width:100%;margin-top:6px" onclick="login()">Sign In →</button>
+      </div>
+      <div class="auth-footer">New here? <a onclick="showPage('page-register')">Create account</a></div>
+    </div>
+    <button class="btn btn-secondary" style="margin-top:16px" onclick="showPage('page-landing')">← Back</button>
+  </div>
+</div>
+
+<!-- =============== DASHBOARD =============== -->
+<div id="page-dashboard" class="page" style="position:relative;">
+  <div class="dashboard-nav">
+    <button class="btn btn-secondary" style="font-size:13px;padding:10px 18px" onclick="logout()">Sign Out</button>
+    <button class="profile-btn" id="dashboard-avatar" onclick="showProfile()">A</button>
+  </div>
+  <div style="position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;">
+    <h2 class="dashboard-greeting" id="dashboard-greeting">Good morning, Alex!</h2>
+    <p class="dashboard-sub">Ready to enter deep focus? Let's track your environment.</p>
+    <div class="start-btn-wrapper">
+      <div class="start-btn-glow"></div>
+      <button class="start-session-btn" onclick="startSession()">▶ Start Focus Session</button>
+    </div>
+    <div class="stats-row">
+      <div class="glass stat-card">
+        <div class="stat-val" id="dash-today">—</div>
+        <div class="stat-lbl">Today's Best</div>
+      </div>
+      <div class="glass stat-card">
+        <div class="stat-val" id="dash-week">—</div>
+        <div class="stat-lbl">7-Day Avg</div>
+      </div>
+      <div class="glass stat-card">
+        <div class="stat-val" id="dash-sessions">0</div>
+        <div class="stat-lbl">Sessions</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- =============== FOCUS MONITOR PAGE =============== -->
+<div id="page-focus" class="page">
+  <nav class="focus-nav">
+    <div class="focus-brand">Focus Bubble</div>
+    <div class="session-timer" id="session-timer">00:00</div>
+    <button class="btn btn-danger" style="font-size:13px;padding:10px 20px" onclick="endSession()">End Session</button>
+  </nav>
+  <div class="focus-main">
+    <!-- Bubble -->
+    <div class="bubble-section">
+      <div class="bubble-wrapper">
+        <div class="bubble-ring ring1"></div>
+        <div class="bubble-ring ring2"></div>
+        <div class="bubble-ring ring3"></div>
+        <div id="focus-bubble">
+          <div class="bubble-score" id="bubble-score-val">100</div>
+          <div class="bubble-label">Focus Score</div>
+        </div>
+      </div>
+      <p class="focus-quote" id="focus-quote-text">Stay focused. Your future self will thank you.</p>
+    </div>
+    <!-- Monitor Panel -->
+    <div class="monitor-panel">
+      <div class="panel-title">Live Environment</div>
+      <!-- Noise -->
+      <div class="glass metric-card">
+        <div class="metric-header">
+          <span class="metric-name">🎙️ Noise Level</span>
+          <span class="metric-status status-good" id="noise-status">OK</span>
+        </div>
+        <div class="metric-val"><span id="noise-val">0</span> dB</div>
+        <div class="metric-bar-bg"><div class="metric-bar" id="noise-bar" style="width:0%"></div></div>
+      </div>
+      <!-- People -->
+      <div class="glass metric-card">
+        <div class="metric-header">
+          <span class="metric-name">👥 People Detected</span>
+          <span class="metric-status status-good" id="people-status">OK</span>
+        </div>
+        <div class="metric-val"><span id="people-val">0</span> person(s)</div>
+        <div class="metric-bar-bg"><div class="metric-bar" id="people-bar" style="width:0%"></div></div>
+      </div>
+      <!-- Light -->
+      <div class="glass metric-card">
+        <div class="metric-header">
+          <span class="metric-name">💡 Light Intensity</span>
+          <span class="metric-status status-good" id="light-status">OK</span>
+        </div>
+        <div class="metric-val"><span id="light-val">—</span> lux</div>
+        <div class="metric-bar-bg"><div class="metric-bar" id="light-bar" style="width:0%"></div></div>
+      </div>
+      <!-- Camera -->
+      <div class="camera-preview-wrapper glass">
+        <video id="camera-preview" autoplay muted playsinline></video>
+        <canvas id="detection-canvas"></canvas>
+        <div class="camera-label">Live Feed</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- =============== PROFILE PAGE =============== -->
+<div id="page-profile" class="page">
+  <div style="position:relative;z-index:1;width:100%;max-width:960px;margin:0 auto;">
+    <div class="profile-back">
+      <button class="btn btn-secondary" style="font-size:13px;padding:10px 18px" onclick="showPage('page-dashboard')">← Dashboard</button>
+    </div>
+    <div class="profile-header">
+      <div class="profile-avatar" id="profile-avatar-letter">A</div>
+      <div class="profile-info">
+        <h2 id="profile-name">Alex Johnson</h2>
+        <p id="profile-email"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="fa9b969f82ba9f829b978a969fd4999597">[email&#160;protected]</a></p>
+      </div>
+    </div>
+    <div class="profile-grid">
+      <div class="glass pstat">
+        <div class="pstat-val" id="pstat-today">—</div>
+        <div class="pstat-lbl">Today's Score</div>
+      </div>
+      <div class="glass pstat">
+        <div class="pstat-val" id="pstat-week">—</div>
+        <div class="pstat-lbl">Weekly Avg</div>
+      </div>
+      <div class="glass pstat">
+        <div class="pstat-val" id="pstat-month">—</div>
+        <div class="pstat-lbl">Monthly Avg</div>
+      </div>
+    </div>
+    <div class="glass chart-card">
+      <div class="chart-title">📈 Focus Score History</div>
+      <canvas id="score-chart" height="100"></canvas>
+    </div>
+    <div class="glass chart-card">
+      <div class="chart-title">📋 Recent Sessions</div>
+      <div id="sessions-list" class="sessions-list"></div>
+    </div>
+  </div>
+</div>
+
+<script src="script.js"></script>
+
+</body>
+</html>
