@@ -13,7 +13,7 @@
 - Member 2: Adithya A - Government Engineering College Idukki
 
 ### Hosted Project Link
-[mention your project hosted link here]
+https://adithya2788.github.io/focus-bubble/
 
 ### Project Description
 Focus Bubble is a cutting-edge, AI-powered study companion designed to transform any environment into a high-productivity zone. Built for the modern student.
